@@ -1,0 +1,44 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    container_name: fastapi
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    restart: always
+
+  worker:
+    build: .
+    container_name: celery_worker
+    command: celery -A app.celery_app.app worker --loglevel=INFO --pool=prefork
+    depends_on:
+      - redis
+    restart: always
+
+  beat:
+    build: .
+    container_name: celery_beat
+    command: celery -A app.celery_app.app beat --loglevel=INFO
+    depends_on:
+      - redis
+    restart: always
+
+  flower:
+    image: mher/flower
+    container_name: flower
+    command: celery --broker=redis://redis:6379/0 flower
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+    restart: always
+
+  redis:
+    image: redis:7
+    container_name: redis_queue
+    ports:
+      - "6379:6379"
+    restart: always
