@@ -8,6 +8,7 @@ services:
       - "8000:8000"
     depends_on:
       - redis
+      - rabbitmq
     restart: always
 
   worker:
@@ -16,6 +17,7 @@ services:
     command: celery -A app.celery_app.app worker --loglevel=INFO --pool=prefork
     depends_on:
       - redis
+      - rabbitmq
     restart: always
 
   beat:
@@ -24,16 +26,18 @@ services:
     command: celery -A app.celery_app.app beat --loglevel=INFO
     depends_on:
       - redis
+      - rabbitmq
     restart: always
 
   flower:
     image: mher/flower
     container_name: flower
-    command: celery --broker=redis://redis:6379/0 flower
+    command: celery --broker=amqp://guest:guest@rabbitmq:5672// flower
     ports:
       - "5555:5555"
     depends_on:
       - redis
+      - rabbitmq
     restart: always
 
   redis:
@@ -41,4 +45,14 @@ services:
     container_name: redis_queue
     ports:
       - "6379:6379"
+    restart: always
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq_redis
+    ports:
+      - "5672:5672"   # broker
+      - "15672:15672" # painel de admin
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
     restart: always
