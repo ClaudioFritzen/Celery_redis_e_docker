@@ -11,14 +11,30 @@ services:
       - rabbitmq
     restart: always
 
-  worker:
+  worker_critical:
     build: .
-    container_name: celery_worker
-    command: celery -A app.celery_app.app worker --loglevel=INFO --pool=prefork
+    container_name: worker_critical
+    command: celery -A app.celery_app worker -Q critical --loglevel=INFO
     depends_on:
-      - redis
       - rabbitmq
     restart: always
+
+  worker_high:
+    build: .
+    container_name: worker_high
+    command: celery -A app.celery_app  worker -Q high --loglevel=INFO
+    depends_on:
+      - rabbitmq
+    restart: always
+
+  worker_low:
+    build: .
+    container_name: worker_low
+    command: celery -A app.celery_app  worker -Q low --loglevel=INFO
+    depends_on:
+      - rabbitmq
+    restart: always
+
 
   beat:
     build: .

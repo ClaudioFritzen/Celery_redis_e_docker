@@ -1,6 +1,8 @@
 # app.py
 
 from fastapi import FastAPI
+from app.models import UserCreate
+from app.rabbitmq import publish_user_created
 from app.tasks import add
 from app.celery_app import app as celery_app
 
@@ -31,3 +33,19 @@ async def run_batch():
         task_ids.append(task.id)
 
     return {"tasks": task_ids}
+
+
+@api.get('/rabbitmq/critical')
+async def run_critical_task():
+    task = celery_app.send_task('app.tasks.process_payment', args=[{'user': 'John Doe', 'amount': 100}], queue='critical')
+    return {'task_id': task.id} 
+
+
+
+@api.post('/users')
+async def create_user(data: UserCreate):
+
+    user_id = 123 
+
+    publish_user_created(user_id, data.email)
+    pass
