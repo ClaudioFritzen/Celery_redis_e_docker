@@ -1,4 +1,4 @@
-# app.py
+# main.py
 
 from fastapi import FastAPI
 from app.models import UserCreate
@@ -49,3 +49,7 @@ async def create_user(data: UserCreate):
 
     publish_user_created(user_id, data.email)
     pass
+
+@api.get('/ola_mundo')
+async def ola_mundo():
+    return {'message': 'Olá, Mundo!'}   

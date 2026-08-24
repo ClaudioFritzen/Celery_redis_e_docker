@@ -1,8 +1,28 @@
-version: "3.9"
 
 services:
   api:
     build: .
+
+    command: uvicorn app.main:api --reload --host 0.0.0.0 --port 8000
+    #        uvicorn <pacote>.<arquivo>:<objeto_fastapi>
+
+
+    develop:
+      watch:
+        - action: sync
+          path: ./app
+          target: /app/app
+          ignore:
+            - __pycache__/
+            - .vscode/
+            - venv/
+            - .pytest_cache/
+            - .coverage
+            - .env
+
+        - action: rebuild
+          path: ./requirements.txt
+
     container_name: fastapi
     ports:
       - "8000:8000"
