@@ -1,12 +1,16 @@
 # main.py
 
 from fastapi import FastAPI
-from app.models import UserCreate
-from app.rabbitmq import publish_user_created
-from app.tasks import add
+
+from app.tasks.tasks import add
+from app.tasks.tasks import process_payment
 from app.celery_app import app as celery_app
+from app.routers import (
+    user,
+)
 
 api = FastAPI()
+api.include_router(user.router)
 
 @api.post('/add')
 async def run_add(x:int, y:int):
@@ -37,18 +41,12 @@ async def run_batch():
 
 @api.get('/rabbitmq/critical')
 async def run_critical_task():
-    task = celery_app.send_task('app.tasks.process_payment', args=[{'user': 'John Doe', 'amount': 100}], queue='critical')
-    return {'task_id': task.id} 
+
+    process_payment.apply_async(args=[{'user': 'John Doe', 'amount': 100}], queue='critical') #agora a task será enviada para a fila 'critical'
+    
+    return {f'Task sent to critical queue': 'Check your RabbitMQ dashboard for the task status.'} 
 
 
-
-@api.post('/users')
-async def create_user(data: UserCreate):
-
-    user_id = 123 
-
-    publish_user_created(user_id, data.email)
-    pass
 
 @api.get('/ola_mundo')
 async def ola_mundo():

@@ -20,5 +20,16 @@ app.conf.task_default_exchange = 'low'
 app.conf.task_default_routing_key = 'low'
 
 app.conf.update(
-    imports=["app.tasks"]
+    task_serializer='json',
+    accept_content=['json'],
+    result_serializer='json',
+    timezone='Europe/Lisbon',
+
+    ## tarefas
+    # app/tasks/nome do arquivo.py
+    imports=["app.tasks.email_tasks",
+             "app.tasks.tasks",
+             "app.tasks.email_recuperação",
+             #"app.tasks.payment_tasks"
+            ],
 )
