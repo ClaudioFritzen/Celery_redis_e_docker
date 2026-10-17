@@ -1,8 +1,9 @@
-from http import HTTPStatus
-from fastapi import APIRouter, Depends, HTTPException
+
+from fastapi import APIRouter
 from app.models.models import UserCreate
+from app.services.email_service import send_email
 from app.services.user_service import create_user
-from app.services.user_service import banco, recover_password
+from app.services.user_service import banco
 
 router = APIRouter(tags=["users"], prefix="/users")
 
@@ -17,10 +18,13 @@ async def create_user_route(user: UserCreate):
     return create_user(name=user.name, email=user.email, password=user.password)
 
 
-@router.post('/recuperar_senha')
-async def recuperar_senha(email: str):
+@router.get("/test-email")
+def test_email():
 
-    
-    # Aqui você chamaria a task Celery para enviar o email de recuperação de senha
-    # Por exemplo: send_recovery_email.apply_async(args=[email], queue='critical')
-    return recover_password(email=email)
+    send_email(
+        to_email="teste@email.com",
+        subject="SMTP funcionando",
+        body="Olá mundo"
+    )
+
+    return {"status": "email enviado"}
