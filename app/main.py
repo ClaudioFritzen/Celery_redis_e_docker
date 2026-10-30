@@ -7,10 +7,12 @@ from app.tasks.tasks import process_payment
 from app.celery_app import app as celery_app
 from app.routers import (
     user,
+    auth
 )
 
 api = FastAPI()
 api.include_router(user.router)
+api.include_router(auth.router)
 
 @api.post('/add')
 async def run_add(x:int, y:int):
