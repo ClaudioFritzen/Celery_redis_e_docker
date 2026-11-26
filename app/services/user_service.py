@@ -1,3 +1,4 @@
+from app.services.email_verification_service import create_verification_token
 from app.tasks.email_tasks import send_confirmation_email
 from app.tasks.email_recuperação import send_reset_email_task
 from app.services.password_reset_service import create_reset_token, validate_token
@@ -8,11 +9,18 @@ banco = []  # Simulando um banco de dados em memória
 def create_user(name: str, email: str, password: str):
 
     # aqui salvamos no banco
-    user = {"id": len(banco) + 1, "name": name, "email": email, "password": password}
+    user = {"id": len(banco) + 1, "name": name, "email": email, "password": password, "email_verified": False}
     banco.append(user)
 
+    # chamamos a função para criar o token de verificação de email
+    token = create_verification_token(user_id=user['id'])
+
+    verify_link = (
+        f"http://localhost:8000/auth/verify-email?token={token}"
+    )
+
     # chamamos a task Celery para enviar o email de confirmação
-    send_confirmation_email.apply_async(args=[email], queue='high')
+    send_confirmation_email.apply_async(args=[email, verify_link], queue='high')
     return f'User created successfully! Check your email {email} to verify your account.'
 
 
